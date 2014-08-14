@@ -21,13 +21,9 @@ fn main() {
 	let (exit_tx, exit_rx) = channel::<bool>();
 	let (printer_tx, printer_rx) = channel();
 
-	for _ in range(0, 4u) {
-		let child_tx = code_tx.clone();
-		let child_code_format = code_format.clone();
-		spawn(proc() {
-			code_generator(child_code_format, child_tx);
-		});
-	}
+	spawn(proc() {
+		code_generator(code_format, code_tx);
+	});
 
 	spawn(proc() {
 		code_exists_handler(total_codes, code_rx, printer_tx, exit_tx);
