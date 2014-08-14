@@ -91,6 +91,12 @@ fn parse_args() -> (Option<uint>, Option<String>) {
 
 	let usage = "Usage: code-generator NUMCODES CODEFORMAT";
 
+	if args.len() < 3 {
+		println!("{}", usage);
+		os::set_exit_status(1);
+		return (None, None);
+	}
+
 	let num_codes: Option<uint> = from_str(args[1].as_slice().trim());
 	let num_codes: Option<uint> = match num_codes {
 		Some(n) => Some(n),
