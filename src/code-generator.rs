@@ -16,45 +16,71 @@ fn main() {
 		}
 	}
 
-	let (tx1, rx1) = channel();
-	let (tx2, rx2) = channel::<bool>();
+	let (code_tx, code_rx) = channel();
+	let (exit_tx, exit_rx) = channel::<bool>();
+	let (printer_tx, printer_rx) = channel();
+
+	for _ in range(0, 4u) {
+		let child_tx = code_tx.clone();
+		let child_code_format = code_format.clone();
+		spawn(proc() {
+			code_generator(child_code_format, child_tx);
+		});
+	}
 
 	spawn(proc() {
-		code_generator(total_codes, code_format, tx1, rx2);
+		code_exists_handler(total_codes, code_rx, printer_tx, exit_tx);
 	});
 
 	spawn(proc() {
-		code_exists_handler(total_codes, tx2, rx1);
+		print_handler(printer_rx);
 	});
+
+	// Once enough codes have been generated, the `code_exists_handler`
+	// sends a message on the exit channel. The main thread will block
+	// until it receives this.
+	exit_rx.recv();
+	return;
 }
 
-fn code_generator(total_codes: uint, code_format: String, tx: Sender<String>, rx: Receiver<bool>) {
-	for _ in range(0, total_codes) {
+fn code_generator(code_format: String, tx: Sender<String>) {
+	loop {
 		let mut code: String;
-		loop {
-			code = generate_code(code_format.as_slice());
-			tx.send(code.clone());
-
-			let exists = rx.recv();
-			if !exists {
-				break;
-			}
+		code = generate_code(code_format.as_slice());
+		let send = tx.send_opt(code.clone());
+		if send == Err(code) {
+			break;
 		}
 	}
 }
 
-fn code_exists_handler(total_codes: uint, tx: Sender<bool>, rx: Receiver<String>) {
+fn code_exists_handler(total_codes: uint, rx: Receiver<String>, printer_tx: Sender<String>, exit_tx: Sender<bool>) {
 	let mut existing_codes: HashSet<String> = HashSet::with_capacity(total_codes);
 
 	loop {
 		let code = rx.recv();
 
-		if existing_codes.contains(&code) {
-			tx.send(true);
-		} else {
+		if !existing_codes.contains(&code) {
 			existing_codes.insert(code.clone());
-			println!("{}", code);
-			tx.send(false);
+			printer_tx.send(code);
+		}
+
+		if existing_codes.len() >= total_codes {
+			exit_tx.send(true);
+			break;
+		}
+	}
+}
+
+fn print_handler(rx: Receiver<String>) {
+	loop {
+		match rx.recv_opt() {
+			Ok(code) => {
+				println!("{}", code);
+			},
+			Err(_) => {
+				break;
+			}
 		}
 	}
 }
@@ -93,7 +119,7 @@ fn parse_args() -> (Option<uint>, Option<String>) {
 	let usage = "Usage: code-generator NUMCODES CODEFORMAT";
 
 	let num_codes: Option<uint> = from_str(args[1].as_slice().trim());
-	let total_codes: Option<uint> = match num_codes {
+	let num_codes: Option<uint> = match num_codes {
 		Some(n) => Some(n),
 		None => {
 			println!("{}", usage);
