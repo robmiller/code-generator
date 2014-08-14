@@ -1,6 +1,7 @@
-use std::rand::{task_rng, Rng};
 use std::os;
 use std::collections::hashmap::HashSet;
+
+mod codes;
 
 fn main() {
 	let total_codes: uint;
@@ -46,7 +47,7 @@ fn main() {
 fn code_generator(code_format: String, tx: Sender<String>) {
 	loop {
 		let mut code: String;
-		code = generate_code(code_format.as_slice());
+		code = codes::generate_code(code_format.as_slice());
 		let send = tx.send_opt(code.clone());
 		if send == Err(code) {
 			break;
@@ -83,34 +84,6 @@ fn print_handler(rx: Receiver<String>) {
 			}
 		}
 	}
-}
-
-fn generate_code(code_format: &str) -> String {
-	let mut code = String::new();
-	for character in code_format.chars() {
-		let random_char = match character {
-			'B' => random_letter(),
-			'1' => random_number(),
-			other_char => other_char
-		};
-		code.grow(1, random_char);
-	}
-
-	code
-}
-
-fn random_letter() -> char {
-	let mut rng = task_rng();
-	let letters = ['A', 'C', 'E', 'F', 'H', 'K', 'L', 'M', 'P', 'R', 'T', 'W', 'X', 'Y'];
-	let i = rng.gen_range(0, letters.len());
-	letters[i]
-}
-
-fn random_number() -> char {
-	let mut rng = task_rng();
-	let numbers = ['3', '4', '6', '7', '9'];
-	let i = rng.gen_range(0, numbers.len());
-	numbers[i]
 }
 
 fn parse_args() -> (Option<uint>, Option<String>) {
