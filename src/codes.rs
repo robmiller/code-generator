@@ -1,7 +1,7 @@
 use std::rand::{task_rng, Rng};
 
 pub fn generate_code(code_format: &str) -> String {
-    let code: String = code_format.chars().map( |character|
+    let code = code_format.chars().map( |character|
         match character {
             'B' => random_letter(),
             '1' => random_number(),

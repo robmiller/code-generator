@@ -4,8 +4,8 @@ use std::collections::hashmap::HashSet;
 mod codes;
 
 fn main() {
-    let total_codes: uint;
-    let code_format: String;
+    let total_codes;
+    let code_format;
 
     match parse_args() {
         (Some(n), Some(c)) => {
@@ -19,8 +19,8 @@ fn main() {
         }
     }
 
-    let (code_tx, code_rx) = channel();
-    let (exit_tx, exit_rx) = channel::<bool>();
+    let (code_tx, code_rx)       = channel();
+    let (exit_tx, exit_rx)       = channel();
     let (printer_tx, printer_rx) = channel();
 
     spawn(proc() {
