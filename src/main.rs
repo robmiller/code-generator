@@ -13,6 +13,8 @@ fn main() {
             code_format = c;
         },
         _ => {
+            println!("{}", usage());
+            os::set_exit_status(1);
             return;
         }
     }
@@ -84,30 +86,22 @@ fn print_handler(rx: Receiver<String>) {
 fn parse_args() -> (Option<uint>, Option<String>) {
     let args = os::args();
 
-    let usage = "Usage: code-generator NUMCODES CODEFORMAT";
-
     if args.len() < 3 {
-        println!("{}", usage);
-        os::set_exit_status(1);
         return (None, None);
     }
 
     let num_codes: Option<uint> = from_str(args[1].as_slice().trim());
-    let num_codes: Option<uint> = match num_codes {
-        Some(n) => Some(n),
-        None => {
-            println!("{}", usage);
-            os::set_exit_status(1);
-            return (None, None);
-        }
-    };
 
-    let code_format: Option<String> = Some(args[2].clone());
-    if code_format.as_slice().len() < 1 {
-        println!("{}", usage);
-        os::set_exit_status(1);
-        return (None, None);
-    }
+    let code_format =
+        if args[2].as_slice().len() < 1 {
+            None
+        } else {
+            Some(args[2].clone())
+        };
 
     (num_codes, code_format)
+}
+
+fn usage() -> String {
+    "Usage: code-generator NUMCODES CODEFORMAT".to_string()
 }
