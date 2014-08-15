@@ -42,8 +42,7 @@ fn main() {
 
 fn code_generator(code_format: String, tx: Sender<String>) {
     loop {
-        let mut code: String;
-        code = codes::generate_code(code_format.as_slice());
+        let code = codes::generate_code(code_format.as_slice());
         let send = tx.send_opt(code.clone());
         if send == Err(code) {
             break;
