@@ -15,13 +15,11 @@ pub fn generate_code(code_format: &str) -> String {
 fn random_letter() -> char {
     let mut rng = task_rng();
     let letters = ['A', 'C', 'E', 'F', 'H', 'K', 'L', 'M', 'P', 'R', 'T', 'W', 'X', 'Y'];
-    let i = rng.gen_range(0, letters.len());
-    letters[i]
+    *rng.choose(letters).expect("Failed to select a random letter")
 }
 
 fn random_number() -> char {
     let mut rng = task_rng();
     let numbers = ['3', '4', '6', '7', '9'];
-    let i = rng.gen_range(0, numbers.len());
-    numbers[i]
+    *rng.choose(numbers).expect("Failed to select a random number")
 }
