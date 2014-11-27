@@ -1,5 +1,5 @@
 use std::os;
-use std::collections::hashmap::HashSet;
+use std::collections::HashSet;
 
 mod codes;
 

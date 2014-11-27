@@ -40,7 +40,7 @@ pub fn generate_code(code_format: &str) -> String {
 fn random_letter() -> char {
     let mut rng = task_rng();
     let letters = ['A', 'C', 'E', 'F', 'H', 'K', 'L', 'M', 'P', 'R', 'T', 'W', 'X', 'Y'];
-    *rng.choose(letters).expect("Failed to select a random letter")
+    *rng.choose(&letters).expect("Failed to select a random letter")
 }
 
 /// Returns a random letter from the available numbers in the codeset.
@@ -51,5 +51,5 @@ fn random_letter() -> char {
 fn random_number() -> char {
     let mut rng = task_rng();
     let numbers = ['3', '4', '6', '7', '9'];
-    *rng.choose(numbers).expect("Failed to select a random number")
+    *rng.choose(&numbers).expect("Failed to select a random number")
 }
