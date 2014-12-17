@@ -49,15 +49,15 @@ fn main() {
     let (exit_tx, exit_rx)       = channel();
     let (printer_tx, printer_rx) = channel();
 
-    spawn(proc() {
+    spawn(move || {
         code_generator(code_format, code_tx);
     });
 
-    spawn(proc() {
+    spawn(move || {
         code_exists_handler(total_codes, code_rx, printer_tx, exit_tx);
     });
 
-    spawn(proc() {
+    spawn(move || {
         print_handler(printer_rx);
     });
 
