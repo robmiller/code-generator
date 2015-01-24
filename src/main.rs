@@ -108,7 +108,7 @@ fn code_generator(code_format: String, tx: Sender<String>) {
 ///                  presumably to be outputted to the screen.
 /// * `exit_tx` - Once all codes have been generated, `true` will be
 ///               passed to this `Sender`.
-fn code_exists_handler(total_codes: uint, rx: Receiver<String>, printer_tx: Sender<String>, exit_tx: Sender<bool>) {
+fn code_exists_handler(total_codes: u32, rx: Receiver<String>, printer_tx: Sender<String>, exit_tx: Sender<bool>) {
     let mut existing_codes: HashSet<String> = HashSet::with_capacity(total_codes);
 
     loop {
@@ -150,17 +150,17 @@ fn print_handler(rx: Receiver<String>) {
 ///
 /// # Return value
 ///
-/// Returns a tuple of two `Option`s; the first an `Option<uint>` for
+/// Returns a tuple of two `Option`s; the first an `Option<u32>` for
 /// the number of codes to generate, and the second an `Option<String>`
 /// for the format to generate codes in.
-fn parse_args() -> (Option<uint>, Option<String>) {
+fn parse_args() -> (Option<u32>, Option<String>) {
     let args = os::args();
 
     if args.len() < 3 {
         return (None, None);
     }
 
-    let num_codes: Option<uint> = from_str(args[1].as_slice().trim());
+    let num_codes: Option<u32> = from_str(args[1].as_slice().trim());
 
     let code_format =
         if args[2].as_slice().len() < 1 {
