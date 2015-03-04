@@ -56,11 +56,11 @@ fn main() {
     });
 
     spawn(move || {
-        code_exists_handler(total_codes, code_rx, printer_tx, exit_tx);
+        code_exists_handler(total_codes, code_rx, printer_tx);
     });
 
     spawn(move || {
-        print_handler(printer_rx);
+        print_handler(printer_rx, exit_tx);
     });
 
     // Once enough codes have been generated, the `code_exists_handler`
@@ -110,9 +110,7 @@ fn code_generator(code_format: String, tx: Sender<String>) {
 ///          `code_generator`.
 /// * `printer_tx` - A `Sender` down which unique codes are passed,
 ///                  presumably to be outputted to the screen.
-/// * `exit_tx` - Once all codes have been generated, `true` will be
-///               passed to this `Sender`.
-fn code_exists_handler(total_codes: u32, rx: Receiver<String>, printer_tx: Sender<String>, exit_tx: Sender<bool>) {
+fn code_exists_handler(total_codes: usize, rx: Receiver<String>, printer_tx: Sender<String>) {
     let mut existing_codes: HashSet<String> = HashSet::with_capacity(total_codes);
 
     loop {
@@ -124,7 +122,7 @@ fn code_exists_handler(total_codes: u32, rx: Receiver<String>, printer_tx: Sende
         }
 
         if existing_codes.len() >= total_codes {
-            exit_tx.send(true);
+            printer_tx.send("last-code".to_string());
             break;
         }
     }
@@ -136,11 +134,17 @@ fn code_exists_handler(total_codes: u32, rx: Receiver<String>, printer_tx: Sende
 ///
 /// * `rx` - A `Receiver` to which codes should be passed; each code
 ///          passed will be outputted verbatim.
-fn print_handler(rx: Receiver<String>) {
+/// * `exit_tx` - Once all codes have been generated, `true` will be
+///               passed to this `Sender`.
+fn print_handler(rx: Receiver<String>, exit_tx: Sender<bool>) {
     loop {
-        match rx.recv_opt() {
+        match rx.recv() {
             Ok(code) => {
-                println!("{}", code);
+                if code.as_slice() == "last-code" {
+                    exit_tx.send(true);
+                } else {
+                    println!("{}", code);
+                }
             },
             Err(_) => {
                 break;
