@@ -1,6 +1,6 @@
 [package]
 name = "code_generator"
-version = "0.1.0"
+version = "0.2.0"
 authors = [ "rob@bigfish.co.uk" ]
 
 [dependencies]
