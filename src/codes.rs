@@ -1,4 +1,9 @@
-use std::rand::{task_rng, Rng};
+extern crate rand;
+
+use self::rand::{thread_rng, ThreadRng, Rng};
+
+static LETTERS: [char; 14] = ['A', 'C', 'E', 'F', 'H', 'K', 'L', 'M', 'P', 'R', 'T', 'W', 'X', 'Y'];
+static NUMBERS: [char; 5]  = ['3', '4', '6', '7', '9'];
 
 /// Generates a single code in the specified format.
 ///
@@ -21,10 +26,12 @@ use std::rand::{task_rng, Rng};
 ///
 /// The generated code.
 pub fn generate_code(code_format: &str) -> String {
+    let mut rng = thread_rng();
+
     let code = code_format.chars().map( |character|
         match character {
-            'B' => random_letter(),
-            '1' => random_number(),
+            'B' => random_letter(&mut rng),
+            '1' => random_number(&mut rng),
             other_char => other_char
         }
     ).collect();
@@ -37,10 +44,8 @@ pub fn generate_code(code_format: &str) -> String {
 /// # Return value
 ///
 /// A single `char`
-fn random_letter() -> char {
-    let mut rng = task_rng();
-    let letters = ['A', 'C', 'E', 'F', 'H', 'K', 'L', 'M', 'P', 'R', 'T', 'W', 'X', 'Y'];
-    *rng.choose(&letters).expect("Failed to select a random letter")
+fn random_letter(rng: &mut ThreadRng) -> char {
+    *rng.choose(&LETTERS).expect("Failed to select a random letter")
 }
 
 /// Returns a random letter from the available numbers in the codeset.
@@ -48,8 +53,6 @@ fn random_letter() -> char {
 /// # Return value
 ///
 /// A single `char`
-fn random_number() -> char {
-    let mut rng = task_rng();
-    let numbers = ['3', '4', '6', '7', '9'];
-    *rng.choose(&numbers).expect("Failed to select a random number")
+fn random_number(rng: &mut ThreadRng) -> char {
+    *rng.choose(&NUMBERS).expect("Failed to select a random number")
 }

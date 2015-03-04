@@ -1,5 +1,7 @@
-use std::os;
+use std::env;
 use std::collections::HashSet;
+use std::sync::mpsc::{channel, Sender, Receiver};
+use std::thread::spawn;
 
 mod codes;
 
@@ -34,13 +36,13 @@ fn main() {
     let usage = "Usage: code-generator NUMCODES CODEFORMAT";
 
     match parse_args() {
-        (Some(n), Some(c)) => {
+        (n, Some(c)) => {
             total_codes = n;
             code_format = c;
         },
         _ => {
             println!("{}", usage);
-            os::set_exit_status(1);
+            env::set_exit_status(1);
             return;
         }
     }
@@ -81,9 +83,11 @@ fn main() {
 fn code_generator(code_format: String, tx: Sender<String>) {
     loop {
         let code = codes::generate_code(code_format.as_slice());
-        let send = tx.send_opt(code.clone());
-        if send == Err(code) {
-            break;
+        match tx.send(code.clone()) {
+            Ok(_) => {}
+            Err(_) => {
+                break;
+            }
         }
     }
 }
@@ -112,7 +116,7 @@ fn code_exists_handler(total_codes: u32, rx: Receiver<String>, printer_tx: Sende
     let mut existing_codes: HashSet<String> = HashSet::with_capacity(total_codes);
 
     loop {
-        let code = rx.recv();
+        let code = rx.recv().unwrap();
 
         if !existing_codes.contains(&code) {
             existing_codes.insert(code.clone());
@@ -150,17 +154,17 @@ fn print_handler(rx: Receiver<String>) {
 ///
 /// # Return value
 ///
-/// Returns a tuple of two `Option`s; the first an `Option<u32>` for
+/// Returns a tuple of two `Option`s; the first an `Option<usize>` for
 /// the number of codes to generate, and the second an `Option<String>`
 /// for the format to generate codes in.
-fn parse_args() -> (Option<u32>, Option<String>) {
-    let args = os::args();
+fn parse_args() -> (usize, Option<String>) {
+    let args: Vec<_> = env::args().collect();
 
     if args.len() < 3 {
-        return (None, None);
+        return (0, None);
     }
 
-    let num_codes: Option<u32> = from_str(args[1].as_slice().trim());
+    let num_codes: usize = args[1].as_slice().trim().parse().unwrap_or(0);
 
     let code_format =
         if args[2].as_slice().len() < 1 {

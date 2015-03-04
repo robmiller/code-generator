@@ -1,6 +1,7 @@
 [package]
-
 name = "code_generator"
 version = "0.1.0"
 authors = [ "rob@bigfish.co.uk" ]
 
+[dependencies]
+rand = "0.1.4"
