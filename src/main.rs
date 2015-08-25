@@ -1,4 +1,5 @@
 use std::env;
+use std::process;
 use std::collections::HashSet;
 use std::sync::mpsc::{channel, Sender, Receiver};
 use std::thread::spawn;
@@ -42,8 +43,7 @@ fn main() {
         },
         _ => {
             println!("{}", usage);
-            env::set_exit_status(1);
-            return;
+            process::exit(1);
         }
     }
 
@@ -82,7 +82,7 @@ fn main() {
 /// * `tx` - A `Sender`; each code generated will be sent to this.
 fn code_generator(code_format: String, tx: Sender<String>) {
     loop {
-        let code = codes::generate_code(code_format.as_slice());
+        let code = codes::generate_code(&code_format);
         match tx.send(code.clone()) {
             Ok(_) => {}
             Err(_) => {
@@ -140,7 +140,7 @@ fn print_handler(rx: Receiver<String>, exit_tx: Sender<bool>) {
     loop {
         match rx.recv() {
             Ok(code) => {
-                if code.as_slice() == "last-code" {
+                if &code == "last-code" {
                     exit_tx.send(true);
                 } else {
                     println!("{}", code);
@@ -168,10 +168,10 @@ fn parse_args() -> (usize, Option<String>) {
         return (0, None);
     }
 
-    let num_codes: usize = args[1].as_slice().trim().parse().unwrap_or(0);
+    let num_codes: usize = (&args[1]).trim().parse().unwrap_or(0);
 
     let code_format =
-        if args[2].as_slice().len() < 1 {
+        if (&args[2]).len() < 1 {
             None
         } else {
             Some(args[2].clone())
