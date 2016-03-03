@@ -66,7 +66,7 @@ fn main() {
     // Once enough codes have been generated, the `code_exists_handler`
     // sends a message on the exit channel. The main thread will block
     // until it receives this.
-    exit_rx.recv();
+    let _ = exit_rx.recv();
     return;
 }
 
@@ -118,11 +118,11 @@ fn code_exists_handler(total_codes: usize, rx: Receiver<String>, printer_tx: Sen
 
         if !existing_codes.contains(&code) {
             existing_codes.insert(code.clone());
-            printer_tx.send(code);
+            let _ = printer_tx.send(code);
         }
 
         if existing_codes.len() >= total_codes {
-            printer_tx.send("last-code".to_string());
+            let _ = printer_tx.send("last-code".to_string());
             break;
         }
     }
@@ -141,7 +141,7 @@ fn print_handler(rx: Receiver<String>, exit_tx: Sender<bool>) {
         match rx.recv() {
             Ok(code) => {
                 if &code == "last-code" {
-                    exit_tx.send(true);
+                    let _ = exit_tx.send(true);
                 } else {
                     println!("{}", code);
                 }
